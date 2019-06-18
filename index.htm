@@ -55,12 +55,14 @@
         });
         
         function displayData(){
+            var dvTable = $("#dvTable");
+            dvTable.empty();
             var headers = new Array();
             $.each(globalData, function(i, v) {
                 headers.push(v.name);
             });
             for(var i=0; i < 4; i++){
-                createData(globalData, headers, indexes[i]);
+                createData(globalData, headers, i);
             }
         }
 
@@ -71,7 +73,7 @@
             main.append(header);
 
             var body = $("<div class='bodydata' />");
-            var obj=data[i];
+            var obj=data[indexes[i]];
             var gains=obj.gains;
             $.each(gains, function(gi, g){
                 main.append(createCell(obj, g));
@@ -86,7 +88,15 @@
             return gain.left.code +" "+gain.gain+" %";
         }
         function createHeader(headers, i){
-            return headers[i];
+            var sel = $('<select>').appendTo('body');
+            sel.change(i, function(e){
+                indexes[e.data]=parseInt(e.target.value);
+                displayData();
+            });
+            $(headers).each(function(ind, hea) {
+                sel.append($("<option>").attr('selected', ind == indexes[i]).attr('value', ind).text(hea));
+            });
+            return sel;
         }
     </script>
 </body>
