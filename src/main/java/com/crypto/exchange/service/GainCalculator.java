@@ -62,17 +62,17 @@ public class GainCalculator {
 		// Bitfinex/BTC(Bitfinex/USD),
 		Wallet bitfinexBtc = new Wallet();
 		bitfinexBtc.name = "Bitfinex/BTC";
-		bitfinexBtc.converter = find(collect.get("Bitfinex/USD"), "BTC").revert();
+		bitfinexBtc.converter = find(collect.get("Bitfinex/USD"), "BTC");
 
 		// Binance/BNB(Binance/USDT),
 		Wallet binanceBnb = new Wallet();
 		binanceBnb.name = "Binance/BNB";
-		binanceBnb.converter = find(collect.get("Binance/USDT"), "BNB").revert();
+		binanceBnb.converter = find(collect.get("Binance/USDT"), "BNB");
 
 		// Binance/BTC(Binance/USDT)
 		Wallet binanceBtc = new Wallet();
 		binanceBtc.name = "Binance/BTC";
-		binanceBtc.converter = find(collect.get("Binance/USDT"), "BTC").revert();
+		binanceBtc.converter = find(collect.get("Binance/USDT"), "BTC");
 
 		// Binance/USDT(NO)
 		Wallet binanceUsd = new Wallet();

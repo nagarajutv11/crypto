@@ -52,6 +52,8 @@
 <body>
     <input type="button" id="btnGenerate" value="Refresh" />
     <input type="number" id="btnCount" value="3" />
+    
+    <label id="load">Loading...</label>
     <hr />
     <div id="dvTable">
     </div>
@@ -60,7 +62,13 @@
         var globalData;
         var indexes;
         $(function () {
+        	indexes=[];
+            for(var i=0; i<1000;i++){
+                indexes.push(i);
+            }
             $("#btnGenerate").click(function () {
+            	$("#load").html("Loading...");
+            	$("#load").show();
                 var dataUrl="https://raw.githubusercontent.com/nagarajutv11/crypto/master/data.json";
                 //var dataUrl="/data";
                 $.ajax({
@@ -68,14 +76,12 @@
                    url: dataUrl,
                    dataType: 'json',
                    success: function(data){
-                        globalData = data;
-                        indexes=[];
-                        for(var i=0; i<globalData.length;i++){
-                            indexes.push(i);
-                        }
+                	   $("#load").hide();
+                        globalData = data;                        
                         displayData(); 
                    },
                    error: function(e) {
+                	   $("#load").html("Error...");
                         console.log(e);
                    }
                 });                
