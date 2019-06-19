@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <style type="text/css">
+        body
+        {
+            font-family: Arial;
+        }
+        table
+        {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+        }
+        table th
+        {
+            background-color: #F7F7F7;
+            color: #333;
+            font-weight: bold;
+        }
+        table th, table td
+        {
+            border-color: #ccc;
+        }
+        .bodydata {
+            position: absolute;
+        }
+        #dvTable {
+        	width: 1000cm;
+        }
+        #dvTable > div {
+            float: left;
+        }
+        .celldata {
+            margin-top: 10px;
+            margin-bottom: -15px;
+        }
+        .cellfulldata {
+            margin-top: 20px;
+            border: 1px solid;
+            margin-left: 3px;
+            margin-right: 3px;
+        }
+        .currencyheader {
+            font-size: medium;
+        }
+        #btnCount {
+            width: 35px;
+        }
+    </style>
+</head>
+<body>
+    <input type="button" id="btnGenerate" value="Refresh" />
+    <input type="number" id="btnCount" value="3" />
+    <hr />
+    <div id="dvTable">
+    </div>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript">
+        var globalData;
+        var indexes;
+        $(function () {
+            $("#btnGenerate").click(function () {
+                var dataUrl="https://raw.githubusercontent.com/nagarajutv11/crypto/master/data.json";
+                //var dataUrl="/data";
+                $.ajax({
+                   type: 'GET',
+                   url: dataUrl,
+                   dataType: 'json',
+                   success: function(data){
+                        globalData = data;
+                        indexes=[];
+                        for(var i=0; i<globalData.length;i++){
+                            indexes.push(i);
+                        }
+                        displayData(); 
+                   },
+                   error: function(e) {
+                        console.log(e);
+                   }
+                });                
+            });
+            $("#btnGenerate").click();
+            $("#btnCount").change(function () {
+                displayData();
+            });
+        });
+        
+        function displayData(){
+            var dvTable = $("#dvTable");
+            dvTable.empty();
+            var headers = new Array();
+            $.each(globalData, function(i, v) {
+                headers.push(v.name);
+            });
+            var c = parseInt($("#btnCount").val());
+            for(var i=0; i < c; i++){
+                createData(globalData, headers, i);
+            }
+        }
+
+        function createData(data, headers, i){
+            var main = $("<div class='main' />");
+            var header = $("<div />");
+            header.append(createHeader(headers, i));
+            main.append(header);
+
+            var body = $("<div class='bodydata' />");
+            var obj=data[indexes[i]];
+            var gains=obj.gains;
+            $.each(gains, function(gi, g){
+                main.append(createCell(obj, g));
+                main.append($("<br/>"));
+            });            
+            main.append(body);
+
+            var dvTable = $("#dvTable");
+            dvTable.append(main);
+        }
+        function createCell(obj, gain){
+            var cellW = $("<div class='cellwrap'  />");
+            var cell = $("<div class='celldata'  />");
+            cell.append('<b>'+gain.left.code +" ** "+gain.gain+" %"+'</b>');
+            var fullData = $("<div class='cellfulldata'  />");
+            fullData.append(prepareTooltipView(obj, gain));
+            fullData.hide();
+            cellW.append(cell);
+            cellW.append(fullData);
+            cell.click(fullData, function(e){
+                e.data.toggle();
+            });
+            return cellW;
+        }
+        function prepareTooltipView(obj, gain){
+            var lw=gain.left.wallet.split("/");
+            var rw=gain.right.wallet.split("/");
+
+            return lw[0]+": "+gain.left.price +" "+lw[1] +"</br>"
+                 + rw[0]+": "+gain.right.price+" "+rw[1] +"</br>"
+                 + lw[1]+"= "+obj.from.converter.price.toFixed(4)+" USD"+"</br>"
+                 + rw[1]+"= "+obj.to.converter.price.toFixed(4)+" USD"+"</br>"
+                 ;
+        }
+        function createHeader(headers, i){
+            var sel = $("<select class='currencyheader'>").appendTo('body');
+            sel.change(i, function(e){
+                indexes[e.data]=parseInt(e.target.value);
+                displayData();
+            });
+            $(headers).each(function(ind, hea) {
+                sel.append($("<option>").attr('selected', ind == indexes[i]).attr('value', ind).text(hea));
+            });
+            return sel;
+        }
+    </script>
+</body>
+</html>
