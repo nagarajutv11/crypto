@@ -2,11 +2,29 @@ package com.crypto.exchange.core;
 
 public class Gain implements Comparable<Gain> {
 	public Currency left;
+	public double leftNom;
 	public Currency right;
+	public double rightNom;
 	public double gain;
 
 	public Currency getLeft() {
 		return left;
+	}
+
+	public double getLeftNom() {
+		return leftNom;
+	}
+
+	public void setLeftNom(double leftNom) {
+		this.leftNom = leftNom;
+	}
+
+	public double getRightNom() {
+		return rightNom;
+	}
+
+	public void setRightNom(double rightNom) {
+		this.rightNom = rightNom;
 	}
 
 	public void setLeft(Currency left) {

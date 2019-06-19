@@ -2,8 +2,11 @@ package com.crypto.exchange.service;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,8 +23,74 @@ import com.crypto.exchange.core.Wallet;
 public class GainCalculator {
 	private static GainCalculator INSTANC;
 	private Map<String, List<Currency>> collect;
+	private Map<String, Wallet> wallets;
 
 	private GainCalculator() {
+		wallets = new HashMap<>();
+
+		// Koinex/INR,
+		Wallet koinex = new Wallet();
+		koinex.name = "Koinex/INR";
+		koinex.converterProvider = () -> {
+			Currency c = new Currency();
+			c.price = getINRinUSD();
+			return c;
+		};
+
+		wallets.put(koinex.name, koinex);
+
+		// Bitfinex/USD(NO),
+		Wallet bitfinex = new Wallet();
+		bitfinex.name = "Bitfinex/USD";
+		bitfinex.converter = new Currency();
+		bitfinex.converterProvider = () -> {
+			Currency c = new Currency();
+			c.price = 1;
+			return c;
+		};
+		wallets.put(bitfinex.name, bitfinex);
+
+		// Bitfinex/BTC(Bitfinex/USD),
+		Wallet bitfinexBtc = new Wallet();
+		bitfinexBtc.name = "Bitfinex/BTC";
+		bitfinexBtc.converterProvider = () -> find(collect.get("Bitfinex/USD"), "BTC");
+		wallets.put(bitfinexBtc.name, bitfinexBtc);
+
+		// Binance/BNB(Binance/USDT),
+		Wallet binanceBnb = new Wallet();
+		binanceBnb.name = "Binance/BNB";
+		binanceBnb.converterProvider = () -> find(collect.get("Binance/USDT"), "BNB");
+		wallets.put(binanceBnb.name, binanceBnb);
+
+		// Binance/BTC(Binance/USDT)
+		Wallet binanceBtc = new Wallet();
+		binanceBtc.name = "Binance/BTC";
+		binanceBtc.converterProvider = () -> find(collect.get("Binance/USDT"), "BTC");
+		wallets.put(binanceBtc.name, binanceBtc);
+
+		// Binance/USDT(NO)
+		Wallet binanceUsd = new Wallet();
+		binanceUsd.name = "Binance/USDT";
+		binanceUsd.converterProvider = () -> {
+			Currency c = new Currency();
+			c.price = 1;
+			return c;
+		};
+		wallets.put(binanceUsd.name, binanceUsd);
+	}
+
+	private double getINRinUSD() {
+		try {
+			URLConnection connection = new URL(
+					"https://free.currconv.com/api/v7/convert?q=INR_USD&compact=ultra&apiKey=670ae96d027a3b5f6b52")
+							.openConnection();
+			InputStream in = connection.getInputStream();
+			String data = IOUtils.toString(in);
+			return new JSONObject(data).getDouble("INR_USD");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	public static GainCalculator get() {
@@ -42,45 +111,22 @@ public class GainCalculator {
 	 * @param args
 	 * @throws Exception
 	 */
-	public List<PathData> calculateGains() {
+	public List<PathData> calculateGains(String... walletNames) {
+		if (walletNames == null || walletNames.length == 0) {
+			walletNames = wallets.keySet().toArray(new String[0]);
+		}
 		List<Currency> all = getAllCurrencies();
-		Map<String, List<Currency>> collect = all.stream().collect(Collectors.groupingBy(c -> c.wallet));
-		GainCalculator cal = new GainCalculator();
-		cal.collect = collect;
-		// Koinex/INR,
-		Wallet koinex = new Wallet();
-		koinex.name = "Koinex/INR";
-		koinex.converter = new Currency();
-		koinex.converter.price = 0.01438;
-
-		// Bitfinex/USD(NO),
-		Wallet bitfinex = new Wallet();
-		bitfinex.name = "Bitfinex/USD";
-		bitfinex.converter = new Currency();
-		bitfinex.converter.price = 1;
-
-		// Bitfinex/BTC(Bitfinex/USD),
-		Wallet bitfinexBtc = new Wallet();
-		bitfinexBtc.name = "Bitfinex/BTC";
-		bitfinexBtc.converter = find(collect.get("Bitfinex/USD"), "BTC");
-
-		// Binance/BNB(Binance/USDT),
-		Wallet binanceBnb = new Wallet();
-		binanceBnb.name = "Binance/BNB";
-		binanceBnb.converter = find(collect.get("Binance/USDT"), "BNB");
-
-		// Binance/BTC(Binance/USDT)
-		Wallet binanceBtc = new Wallet();
-		binanceBtc.name = "Binance/BTC";
-		binanceBtc.converter = find(collect.get("Binance/USDT"), "BTC");
-
-		// Binance/USDT(NO)
-		Wallet binanceUsd = new Wallet();
-		binanceUsd.name = "Binance/USDT";
-		binanceUsd.converter = new Currency();
-		binanceUsd.converter.price = 1;
-
-		List<PathData> gains = cal.calculate(koinex, bitfinex, bitfinexBtc, binanceBnb, binanceBtc, binanceUsd);
+		this.collect = all.stream().collect(Collectors.groupingBy(c -> c.wallet));
+		Wallet[] selectedWallets = new Wallet[walletNames.length];
+		int i = 0;
+		for (String s : walletNames) {
+			Wallet wallet = wallets.get(s);
+			if (wallet != null) {
+				wallet.prepare();
+				selectedWallets[i++] = wallet;
+			}
+		}
+		List<PathData> gains = calculate(selectedWallets);
 		return gains;
 	}
 
@@ -113,8 +159,10 @@ public class GainCalculator {
 			if (r != null) {
 				Gain gain = new Gain();
 				gain.left = l;
+				gain.leftNom = lw.to(l.price);
 				gain.right = r;
-				gain.gain = (int) (((rw.to(r.price) - lw.to(l.price)) / lw.to(l.price)) * 10000) / 100.0;
+				gain.rightNom = rw.to(r.price);
+				gain.gain = (int) (((gain.rightNom - gain.leftNom) / gain.leftNom) * 10000) / 100.0;
 				gains.add(gain);
 			}
 		});

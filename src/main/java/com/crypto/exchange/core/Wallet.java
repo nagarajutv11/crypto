@@ -1,9 +1,12 @@
 package com.crypto.exchange.core;
 
+import java.util.function.Supplier;
+
 public class Wallet {
 
 	public String name;
 	public Currency converter;
+	public Supplier<Currency> converterProvider;
 
 	public String getName() {
 		return name;
@@ -19,6 +22,10 @@ public class Wallet {
 
 	public void setConverter(Currency converter) {
 		this.converter = converter;
+	}
+
+	public void prepare() {
+		converter = converterProvider.get();
 	}
 
 	@Override

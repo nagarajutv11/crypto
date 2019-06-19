@@ -1,6 +1,7 @@
 package com.crypto.servlet;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -18,8 +19,9 @@ public class SimpleServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest reqest, HttpServletResponse response) throws ServletException, IOException {
-		System.out.println("Started");
-		List<PathData> gains = GainCalculator.get().calculateGains();
+		String[] wallets = reqest.getParameterValues("wallets[]");
+		System.out.println("Started: " + Arrays.toString(wallets));
+		List<PathData> gains = GainCalculator.get().calculateGains(wallets);
 		System.out.println("End");
 		JSONArray arr = new JSONArray(gains);
 		response.setContentType("application/json;charset=UTF-8");

@@ -52,8 +52,13 @@
 <body>
     <input type="button" id="btnGenerate" value="Refresh" />
     <input type="number" id="btnCount" value="3" />
-    
-    <label id="load">Loading...</label>
+    <label id="load">Loading...</label></br>
+    <input type="checkbox" id="koiinr" checked>Koinex/INR
+    <input type="checkbox" id="binusd" checked>Binance/USDT
+    <input type="checkbox" id="bitusd" checked>Bitfinex/USD
+    <input type="checkbox" id="bitbtc">Bitfinex/BTC
+    <input type="checkbox" id="binbtc">Binance/BTC
+    <input type="checkbox" id="bitbnb">Binance/BNB
     <hr />
     <div id="dvTable">
     </div>
@@ -69,11 +74,34 @@
             $("#btnGenerate").click(function () {
             	$("#load").html("Loading...");
             	$("#load").show();
-                var dataUrl="https://raw.githubusercontent.com/nagarajutv11/crypto/master/data.json";
-                //var dataUrl="/data";
+            	var wallets=[];
+            	if($("#koiinr").prop('checked')){
+            		wallets.push('Koinex/INR');
+            	}
+            	if($("#binusd").prop('checked')){
+            		wallets.push('Binance/USDT');
+            	}
+            	if($("#bitusd").prop('checked')){
+            		wallets.push('Bitfinex/USD');
+            	}
+            	if($("#bitbtc").prop('checked')){
+            		wallets.push('Bitfinex/BTC');
+            	}
+            	if($("#binbtc").prop('checked')){
+            		wallets.push('Binance/BTC');
+            	}
+            	if($("#bitbnb").prop('checked')){
+            		wallets.push('Binance/BNB');
+            	}           	
+            	
+                //var dataUrl="https://raw.githubusercontent.com/nagarajutv11/crypto/master/data.json";
+                var dataUrl="/data";
                 $.ajax({
                    type: 'GET',
                    url: dataUrl,
+                   data: {
+                	   'wallets': wallets
+                   },
                    dataType: 'json',
                    success: function(data){
                 	   $("#load").hide();
@@ -141,8 +169,10 @@
             var lw=gain.left.wallet.split("/");
             var rw=gain.right.wallet.split("/");
 
-            return lw[0]+": "+gain.left.price +" "+lw[1] +"</br>"
-                 + rw[0]+": "+gain.right.price+" "+rw[1] +"</br>"
+            return lw[0]+": "+gain.left.price.toFixed(4) +" "+lw[1] +"</br>"
+            	 + lw[0]+": "+gain.leftNom.toFixed(4) +" USD" +"</br>"
+                 + rw[0]+": "+gain.right.price.toFixed(4)+" "+rw[1] +"</br>"
+                 + rw[0]+": "+gain.rightNom.toFixed(4) +" USD" +"</br>"
                  + lw[1]+"= "+obj.from.converter.price.toFixed(4)+" USD"+"</br>"
                  + rw[1]+"= "+obj.to.converter.price.toFixed(4)+" USD"+"</br>"
                  ;
