@@ -15,10 +15,10 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.crypto.exchange.core.Currency;
-import com.crypto.exchange.core.Gain;
-import com.crypto.exchange.core.PathData;
-import com.crypto.exchange.core.Wallet;
+import com.crypto.main.core.Currency;
+import com.crypto.main.core.Gain;
+import com.crypto.main.core.PathData;
+import com.crypto.main.core.Wallet;
 
 public class GainCalculator {
 	private static GainCalculator INSTANC;

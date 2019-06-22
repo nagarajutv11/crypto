@@ -1,5 +1,8 @@
-package com.crypto.exchange.core;
+package com.crypto.main.core;
 
+import javax.persistence.Entity;
+
+//@Entity
 public class Currency {
 	public String wallet;
 	public String baseCurrency;

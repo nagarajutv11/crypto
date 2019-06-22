@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 
-import com.crypto.exchange.core.PathData;
 import com.crypto.exchange.service.GainCalculator;
+import com.crypto.main.core.PathData;
 
 public class SimpleServlet extends HttpServlet {
 	private static final long serialVersionUID = -4751096228274971485L;

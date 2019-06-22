@@ -1,4 +1,4 @@
-package com.crypto.exchange.core;
+package com.crypto.main.core;
 
 public class Gain implements Comparable<Gain> {
 	public Currency left;

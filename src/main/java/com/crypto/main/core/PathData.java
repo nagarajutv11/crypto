@@ -1,11 +1,19 @@
-package com.crypto.exchange.core;
+package com.crypto.main.core;
 
 import java.util.List;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+//@Entity
 public class PathData {
+	//@Column
 	public String name;
+	//@OneToMany
 	public Wallet from;
+	//@OneToMany
 	public Wallet to;
+	
 	public List<Gain> gains;
 
 	public String getName() {

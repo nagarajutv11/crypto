@@ -1,4 +1,4 @@
-package com.crypto.exchange.core;
+package com.crypto.main.core;
 
 import java.util.function.Supplier;
 

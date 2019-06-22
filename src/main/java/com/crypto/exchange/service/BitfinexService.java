@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 
-import com.crypto.exchange.core.Currency;
+import com.crypto.main.core.Currency;
 
 public class BitfinexService {
 

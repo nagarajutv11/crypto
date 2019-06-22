@@ -10,7 +10,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
-import com.crypto.exchange.core.Currency;
+import com.crypto.main.core.Currency;
 
 public class KoinexService {
 
