@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class BitfinexService {
 
 	public static void main(String[] args) {
 		List<Currency> all = BitfinexService.get().read();
-		Map<String, List<Currency>> collect = all.stream().collect(Collectors.groupingBy(c -> c.baseCurrency));
+		Map<String, List<Currency>> collect = all.stream().collect(Collectors.groupingBy(c -> c.getBaseCurrency()));
 		collect.forEach((k, e) -> {
 			System.out.println(k + "->" + e.size());
 		});
@@ -62,14 +63,15 @@ public class BitfinexService {
 		Currency cur = new Currency();
 		String substring = obj.getString(0);
 		if (substring.startsWith("t")) {
-			cur.baseCurrency = substring.substring(substring.length() - 3, substring.length());
-			cur.code = substring.substring(1, substring.length() - 3);
+			cur.setBaseCurrency(substring.substring(substring.length() - 3, substring.length()));
+			cur.setCode(substring.substring(1, substring.length() - 3));
 		} else {
-			cur.baseCurrency = "f";
-			cur.code = substring.substring(1, substring.length());
+			cur.setBaseCurrency("f");
+			cur.setCode(substring.substring(1, substring.length()));
 		}
-		cur.price = obj.getDouble(7);
-		cur.wallet = "Bitfinex/" + cur.baseCurrency;
+		cur.setPrice(obj.getDouble(7));
+		cur.setWallet("Bitfinex/" + cur.getBaseCurrency());
+		cur.setDate(new Date());
 		return cur;
 	}
 }

@@ -1,10 +1,29 @@
 package com.crypto.exchange.core;
 
+import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
 public class Currency {
-	public String wallet;
-	public String baseCurrency;
-	public String code;
-	public double price;
+	@Id
+	@GeneratedValue
+	private long id;
+	private String wallet;
+	private String baseCurrency;
+	private String code;
+	private double price;
+	private Date date;
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
 
 	public String getWallet() {
 		return wallet;
@@ -47,5 +66,13 @@ public class Currency {
 		Currency c = new Currency();
 		c.price = 1 / price;
 		return c;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 }

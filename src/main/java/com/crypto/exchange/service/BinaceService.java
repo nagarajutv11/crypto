@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ public class BinaceService {
 	private static BinaceService INSTANCE;
 
 	private BinaceService() {
-
 	}
 
 	public static BinaceService get() {
@@ -31,7 +31,7 @@ public class BinaceService {
 
 	public static void main(String[] args) {
 		List<Currency> all = BinaceService.get().read();
-		Map<String, List<Currency>> collect = all.stream().collect(Collectors.groupingBy(c -> c.baseCurrency));
+		Map<String, List<Currency>> collect = all.stream().collect(Collectors.groupingBy(c -> c.getBaseCurrency()));
 		collect.forEach((k, e) -> {
 			System.out.println(k + "->" + e.size());
 		});
@@ -61,10 +61,11 @@ public class BinaceService {
 
 	private Currency readCurrency(JSONObject obj) {
 		Currency cur = new Currency();
-		cur.baseCurrency = obj.getString("qa");
-		cur.code = obj.getString("ba");
-		cur.price = obj.getDouble("c");
-		cur.wallet = "Binance/" + cur.baseCurrency;
+		cur.setBaseCurrency(obj.getString("qa"));
+		cur.setCode(obj.getString("ba"));
+		cur.setPrice(obj.getDouble("c"));
+		cur.setWallet("Binance/" + cur.getBaseCurrency());
+		cur.setDate(new Date());
 		return cur;
 	}
 }

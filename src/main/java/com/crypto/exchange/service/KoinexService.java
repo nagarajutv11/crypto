@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,15 +69,16 @@ public class KoinexService {
 
 	private Currency readCurrency(double factor, String price, JSONObject obj) {
 		Currency cur = new Currency();
-		cur.baseCurrency = obj.getString("baseCurrency");
-		if (cur.baseCurrency.equals("inr")) {
-			cur.baseCurrency = "INR";
+		cur.setBaseCurrency(obj.getString("baseCurrency"));
+		if (cur.getBaseCurrency().equals("inr")) {
+			cur.setBaseCurrency("INR");
 		} else {
-			cur.baseCurrency = "TUSD";
+			cur.setBaseCurrency("TUSD");
 		}
-		cur.code = obj.getString("currency_short_form");
-		cur.price = obj.getDouble("last_traded_price") * factor;
-		cur.wallet = "Koinex/" + cur.baseCurrency;
+		cur.setCode(obj.getString("currency_short_form"));
+		cur.setPrice(obj.getDouble("last_traded_price") * factor);
+		cur.setWallet("Koinex/" + cur.getBaseCurrency());
+		cur.setDate(new Date());
 		return cur;
 	}
 }

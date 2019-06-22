@@ -1,11 +1,34 @@
 package com.crypto.exchange.core;
 
+import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
+@Entity
 public class Gain implements Comparable<Gain> {
-	public Currency left;
-	public double leftNom;
-	public Currency right;
-	public double rightNom;
-	public double gain;
+	@Id
+	@GeneratedValue
+	private long id;
+	@ManyToOne
+	private Currency left;
+	private double leftNom;
+	@ManyToOne
+	private Currency right;
+	private double rightNom;
+	private double gain;
+	private Date date;
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
 
 	public Currency getLeft() {
 		return left;
@@ -54,6 +77,14 @@ public class Gain implements Comparable<Gain> {
 
 	@Override
 	public String toString() {
-		return left.code + ":" + gain + "%";
+		return left.getCode() + ":" + gain + "%";
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 }

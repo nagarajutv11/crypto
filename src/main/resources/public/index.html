@@ -154,7 +154,7 @@
         function createCell(obj, gain){
             var cellW = $("<div class='cellwrap'  />");
             var cell = $("<div class='celldata'  />");
-            cell.append('<b>'+gain.left.code +" ** "+gain.gain+" %"+'</b>');
+            cell.append('<b>'+gain.left.code +" = "+gain.gain+" %"+'</b>');
             var fullData = $("<div class='cellfulldata'  />");
             fullData.append(prepareTooltipView(obj, gain));
             fullData.hide();
@@ -173,8 +173,8 @@
             	 + lw[0]+": "+gain.leftNom.toFixed(4) +" USD" +"</br>"
                  + rw[0]+": "+gain.right.price.toFixed(4)+" "+rw[1] +"</br>"
                  + rw[0]+": "+gain.rightNom.toFixed(4) +" USD" +"</br>"
-                 + lw[1]+"= "+obj.from.converter.price.toFixed(4)+" USD"+"</br>"
-                 + rw[1]+"= "+obj.to.converter.price.toFixed(4)+" USD"+"</br>"
+                 + lw[1]+"= "+obj.fromFactor.toFixed(4)+" USD"+"</br>"
+                 + rw[1]+"= "+obj.toFactor.toFixed(4)+" USD"+"</br>"
                  ;
         }
         function createHeader(headers, i){

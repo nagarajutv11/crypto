@@ -1,12 +1,35 @@
 package com.crypto.exchange.core;
 
+import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+@Entity
 public class PathData {
-	public String name;
-	public Wallet from;
-	public Wallet to;
-	public List<Gain> gains;
+	@Id
+	@GeneratedValue
+	private long id;
+	private String name;
+	private String fromWallet;
+	private double fromFactor;
+	private double toFactor;
+	private String toWallet;
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<Gain> gains;
+	private Date date;
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
 
 	public String getName() {
 		return name;
@@ -16,20 +39,36 @@ public class PathData {
 		this.name = name;
 	}
 
-	public Wallet getFrom() {
-		return from;
+	public String getFromWallet() {
+		return fromWallet;
 	}
 
-	public void setFrom(Wallet from) {
-		this.from = from;
+	public void setFromWallet(String fromWallet) {
+		this.fromWallet = fromWallet;
 	}
 
-	public Wallet getTo() {
-		return to;
+	public double getFromFactor() {
+		return fromFactor;
 	}
 
-	public void setTo(Wallet to) {
-		this.to = to;
+	public void setFromFactor(double fromFactor) {
+		this.fromFactor = fromFactor;
+	}
+
+	public double getToFactor() {
+		return toFactor;
+	}
+
+	public void setToFactor(double toFactor) {
+		this.toFactor = toFactor;
+	}
+
+	public String getToWallet() {
+		return toWallet;
+	}
+
+	public void setToWallet(String toWallet) {
+		this.toWallet = toWallet;
 	}
 
 	public List<Gain> getGains() {
@@ -38,6 +77,14 @@ public class PathData {
 
 	public void setGains(List<Gain> gains) {
 		this.gains = gains;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 }

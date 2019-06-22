@@ -1,18 +1,17 @@
 package com.crypto.exchange.service;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.crypto.exchange.core.Currency;
@@ -30,53 +29,40 @@ public class GainCalculator {
 
 		// Koinex/INR,
 		Wallet koinex = new Wallet();
-		koinex.name = "Koinex/INR";
-		koinex.converterProvider = () -> {
-			Currency c = new Currency();
-			c.price = getINRinUSD();
-			return c;
-		};
+		koinex.setName("Koinex/INR");
+		koinex.converterProvider = () -> getINRinUSD();
 
-		wallets.put(koinex.name, koinex);
+		wallets.put(koinex.getName(), koinex);
 
 		// Bitfinex/USD(NO),
 		Wallet bitfinex = new Wallet();
-		bitfinex.name = "Bitfinex/USD";
-		bitfinex.converter = new Currency();
-		bitfinex.converterProvider = () -> {
-			Currency c = new Currency();
-			c.price = 1;
-			return c;
-		};
-		wallets.put(bitfinex.name, bitfinex);
+		bitfinex.setName("Bitfinex/USD");
+		bitfinex.converterProvider = () -> 1d;
+		wallets.put(bitfinex.getName(), bitfinex);
 
 		// Bitfinex/BTC(Bitfinex/USD),
 		Wallet bitfinexBtc = new Wallet();
-		bitfinexBtc.name = "Bitfinex/BTC";
-		bitfinexBtc.converterProvider = () -> find(collect.get("Bitfinex/USD"), "BTC");
-		wallets.put(bitfinexBtc.name, bitfinexBtc);
+		bitfinexBtc.setName("Bitfinex/BTC");
+		bitfinexBtc.converterProvider = () -> find(collect.get("Bitfinex/USD"), "BTC").getPrice();
+		wallets.put(bitfinexBtc.getName(), bitfinexBtc);
 
 		// Binance/BNB(Binance/USDT),
 		Wallet binanceBnb = new Wallet();
-		binanceBnb.name = "Binance/BNB";
-		binanceBnb.converterProvider = () -> find(collect.get("Binance/USDT"), "BNB");
-		wallets.put(binanceBnb.name, binanceBnb);
+		binanceBnb.setName("Binance/BNB");
+		binanceBnb.converterProvider = () -> find(collect.get("Binance/USDT"), "BNB").getPrice();
+		wallets.put(binanceBnb.getName(), binanceBnb);
 
 		// Binance/BTC(Binance/USDT)
 		Wallet binanceBtc = new Wallet();
-		binanceBtc.name = "Binance/BTC";
-		binanceBtc.converterProvider = () -> find(collect.get("Binance/USDT"), "BTC");
-		wallets.put(binanceBtc.name, binanceBtc);
+		binanceBtc.setName("Binance/BTC");
+		binanceBtc.converterProvider = () -> find(collect.get("Binance/USDT"), "BTC").getPrice();
+		wallets.put(binanceBtc.getName(), binanceBtc);
 
 		// Binance/USDT(NO)
 		Wallet binanceUsd = new Wallet();
-		binanceUsd.name = "Binance/USDT";
-		binanceUsd.converterProvider = () -> {
-			Currency c = new Currency();
-			c.price = 1;
-			return c;
-		};
-		wallets.put(binanceUsd.name, binanceUsd);
+		binanceUsd.setName("Binance/USDT");
+		binanceUsd.converterProvider = () -> 1d;
+		wallets.put(binanceUsd.getName(), binanceUsd);
 	}
 
 	private double getINRinUSD() {
@@ -111,12 +97,12 @@ public class GainCalculator {
 	 * @param args
 	 * @throws Exception
 	 */
-	public List<PathData> calculateGains(String... walletNames) {
+	public synchronized List<PathData> calculateGains(String... walletNames) {
 		if (walletNames == null || walletNames.length == 0) {
 			walletNames = wallets.keySet().toArray(new String[0]);
 		}
 		List<Currency> all = getAllCurrencies();
-		this.collect = all.stream().collect(Collectors.groupingBy(c -> c.wallet));
+		this.collect = all.stream().collect(Collectors.groupingBy(c -> c.getWallet()));
 		Wallet[] selectedWallets = new Wallet[walletNames.length];
 		int i = 0;
 		for (String s : walletNames) {
@@ -136,10 +122,13 @@ public class GainCalculator {
 			for (Wallet r : wallets) {
 				if (l != r) {
 					PathData data = new PathData();
-					data.from = l;
-					data.to = r;
-					data.name = l + "->" + r;
-					data.gains = calculate(l, r);
+					data.setFromWallet(l.getName());
+					data.setFromFactor(l.getFactor());
+					data.setToWallet(r.getName());
+					data.setToFactor(r.getFactor());
+					data.setName(l + "->" + r);
+					data.setGains(calculate(l, r));
+					data.setDate(new Date());
 					gains.add(data);
 				}
 			}
@@ -149,20 +138,19 @@ public class GainCalculator {
 
 	private List<Gain> calculate(Wallet lw, Wallet rw) {
 		List<Gain> gains = new ArrayList<>();
-		if (lw.converter == null || rw.converter == null) {
-			return gains;
-		}
-		List<Currency> left = collect.get(lw.name);
-		List<Currency> right = collect.get(rw.name);
+		List<Currency> left = collect.get(lw.getName());
+		List<Currency> right = collect.get(rw.getName());
 		left.forEach(l -> {
-			Currency r = find(right, l.code);
+			Currency r = find(right, l.getCode());
 			if (r != null) {
 				Gain gain = new Gain();
-				gain.left = l;
-				gain.leftNom = lw.to(l.price);
-				gain.right = r;
-				gain.rightNom = rw.to(r.price);
-				gain.gain = (int) (((gain.rightNom - gain.leftNom) / gain.leftNom) * 10000) / 100.0;
+				gain.setLeft(l);
+				gain.setLeftNom(lw.to(l.getPrice()));
+				gain.setRight(r);
+				gain.setRightNom(rw.to(r.getPrice()));
+				gain.setGain(
+						(int) (((gain.getRightNom() - gain.getLeftNom()) / gain.getLeftNom()) * 100000000) / 1000000.0);
+				gain.setDate(new Date());
 				gains.add(gain);
 			}
 		});
@@ -170,25 +158,7 @@ public class GainCalculator {
 		return gains;
 	}
 
-	private static List<Currency> getAllCurrencies2() throws Exception {
-		try (InputStream input = new FileInputStream("C:\\Users\\nagar\\Desktop\\currencies.txt")) {
-			String data = IOUtils.toString(input);
-			JSONArray arr = new JSONArray(data);
-			List<Currency> all = new ArrayList<>();
-			arr.forEach(c -> {
-				JSONObject o = (JSONObject) c;
-				Currency cur = new Currency();
-				cur.wallet = o.getString("wallet");
-				cur.baseCurrency = o.getString("baseCurrency");
-				cur.code = o.getString("code");
-				cur.price = o.getDouble("price");
-				all.add(cur);
-			});
-			return all;
-		}
-	}
-
-	private static List<Currency> getAllCurrencies() {
+	private List<Currency> getAllCurrencies() {
 		List<Currency> all = new ArrayList<>();
 		all.addAll(BinaceService.get().read());
 		all.addAll(BitfinexService.get().read());
@@ -196,18 +166,9 @@ public class GainCalculator {
 		return all;
 	}
 
-	private static JSONObject createCurrencty(Currency c) {
-		JSONObject obj = new JSONObject();
-		obj.put("wallet", c.wallet);
-		obj.put("baseCurrency", c.baseCurrency);
-		obj.put("code", c.code);
-		obj.put("price", c.price);
-		return obj;
-	}
-
-	private static Currency find(List<Currency> right, String code) {
+	private Currency find(List<Currency> right, String code) {
 		for (Currency c : right) {
-			if (c.code.equalsIgnoreCase(code)) {
+			if (c.getCode().equalsIgnoreCase(code)) {
 				return c;
 			}
 		}

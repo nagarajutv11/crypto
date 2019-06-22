@@ -4,9 +4,9 @@ import java.util.function.Supplier;
 
 public class Wallet {
 
-	public String name;
-	public Currency converter;
-	public Supplier<Currency> converterProvider;
+	private String name;
+	private double factor;
+	public Supplier<Double> converterProvider;
 
 	public String getName() {
 		return name;
@@ -16,16 +16,12 @@ public class Wallet {
 		this.name = name;
 	}
 
-	public Currency getConverter() {
-		return converter;
-	}
-
-	public void setConverter(Currency converter) {
-		this.converter = converter;
+	public double getFactor() {
+		return factor;
 	}
 
 	public void prepare() {
-		converter = converterProvider.get();
+		factor = converterProvider.get();
 	}
 
 	@Override
@@ -34,6 +30,6 @@ public class Wallet {
 	}
 
 	public double to(double price) {
-		return converter.price * price;
+		return factor * price;
 	}
 }
