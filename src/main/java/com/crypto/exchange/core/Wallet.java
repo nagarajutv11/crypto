@@ -29,6 +29,6 @@ public class Wallet {
 	}
 
 	public double to(double price) {
-		return (int) (factor * price * 1000000) / 1000000.0;
+		return (long) (factor * price * 10_00_000) / 10_00_000.0;
 	}
 }

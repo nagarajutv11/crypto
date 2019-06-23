@@ -153,7 +153,7 @@ public class GainCalculator {
 				gain.setRight(r);
 				gain.setRightNom(rw.to(r.getPrice()));
 				gain.setGain(
-						(int) (((gain.getRightNom() - gain.getLeftNom()) / gain.getLeftNom()) * 100000000) / 1000000.0);
+						(long) (((gain.getRightNom() - gain.getLeftNom()) / gain.getLeftNom()) * 100000000) / 1000000.0);
 				gain.setDate(new Date());
 				gains.add(gain);
 			}
