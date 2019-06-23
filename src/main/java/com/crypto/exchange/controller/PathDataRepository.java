@@ -13,7 +13,7 @@ import com.crypto.exchange.core.TopCoin;
 @Repository
 public interface PathDataRepository extends CrudRepository<PathData, Long> {
 	
-	@Query(value = "select name, left_code as code, gain\r\n" + 
+	@Query(value = "select name, left_code as code, round(gain, 6) as gain \r\n" + 
 			"	from top_coins where top_rnk <= :rank and name in :wallets \r\n" + 
 			"    order by top_rnk", nativeQuery = true)
 	List<TopCoin> findTopCoins(@Param("wallets") List<String> wallets, @Param("rank") int rank);
