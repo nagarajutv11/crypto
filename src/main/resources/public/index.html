@@ -44,14 +44,19 @@
         .currencyheader {
             font-size: medium;
         }
-        #btnCount {
+        .count {
             width: 35px;
         }
+        .rankBody {
+		    border: 1px solid red;
+		}
     </style>
 </head>
 <body>
-    <input type="button" id="btnGenerate" value="Refresh" />
-    <input type="number" id="btnCount" value="3" />
+    <input type="button" id="dataGenerate" value="Refresh Data" />
+        <input type="number" id="dataCount" value="3" class="count"/>
+    <input type="button" id="rankGenerate" value="Refresh Rank" />
+    <input type="number" id="rankCount" value="5" class="count"/>
     <label id="load">Loading...</label></br>
     <input type="checkbox" id="koiinr" checked>Koinex/INR
     <input type="checkbox" id="binusd" checked>Binance/USDT
@@ -66,60 +71,91 @@
     <script type="text/javascript">
         var globalData;
         var indexes;
+        var ranks={};
         $(function () {
         	indexes=[];
             for(var i=0; i<1000;i++){
                 indexes.push(i);
             }
-            $("#btnGenerate").click(function () {
-            	$("#load").html("Loading...");
-            	$("#load").show();
-            	var wallets=[];
-            	if($("#koiinr").prop('checked')){
-            		wallets.push('Koinex/INR');
-            	}
-            	if($("#binusd").prop('checked')){
-            		wallets.push('Binance/USDT');
-            	}
-            	if($("#bitusd").prop('checked')){
-            		wallets.push('Bitfinex/USD');
-            	}
-            	if($("#bitbtc").prop('checked')){
-            		wallets.push('Bitfinex/BTC');
-            	}
-            	if($("#binbtc").prop('checked')){
-            		wallets.push('Binance/BTC');
-            	}
-            	if($("#bitbnb").prop('checked')){
-            		wallets.push('Binance/BNB');
-            	}           	
-            	
-                //var dataUrl="https://raw.githubusercontent.com/nagarajutv11/crypto/master/data.json";
-                var dataUrl="/data";
-                $.ajax({
-                   type: 'GET',
-                   url: dataUrl,
-                   data: {
-                	   'wallets': wallets
-                   },
-                   dataType: 'json',
-                   success: function(data){
-                	   $("#load").hide();
-                        globalData = data;                        
-                        displayData(); 
-                   },
-                   error: function(e) {
-                	   $("#load").html("Error...");
-                        console.log(e);
-                   }
-                });                
-            });
-            $("#btnGenerate").click();
-            $("#btnCount").change(function () {
-                displayData();
-            });
+            $("#dataGenerate").click(function (){loadData();});
+            $("#dataGenerate").click();
+            $("#rankGenerate").click(function (){loadRankData();});
+            $("#rankGenerate").click();
+            $("#dataCount").change(function () {displayData();});
+            $("#rankCount").change(function () {loadRankData();});
         });
-        
+        function prepareWallets(){
+        	var wallets=[];
+        	if($("#koiinr").prop('checked')){
+        		wallets.push('Koinex/INR');
+        	}
+        	if($("#binusd").prop('checked')){
+        		wallets.push('Binance/USDT');
+        	}
+        	if($("#bitusd").prop('checked')){
+        		wallets.push('Bitfinex/USD');
+        	}
+        	if($("#bitbtc").prop('checked')){
+        		wallets.push('Bitfinex/BTC');
+        	}
+        	if($("#binbtc").prop('checked')){
+        		wallets.push('Binance/BTC');
+        	}
+        	if($("#bitbnb").prop('checked')){
+        		wallets.push('Binance/BNB');
+        	}
+        	return wallets;
+        }
+        function loadRankData(){
+        	$("#load").html("Loading Ranks...");
+        	$("#load").show();
+            var dataUrl="/top";
+            $.ajax({
+               type: 'GET',
+               url: dataUrl,
+               data: {
+            	   'wallets': prepareWallets(),
+            	   'rank': parseInt($("#rankCount").val())
+               },
+               dataType: 'json',
+               success: function(data){
+            	   $("#load").hide();
+                    displayRankData(data);
+               },
+               error: function(e) {
+            	   $("#load").html("Error...");
+                    console.log(e);
+               }
+            });
+        }
+        function displayRankData(data){
+        	ranks = data;
+        	if(globalData){
+        		displayData();
+        	}
+        }
+        function loadData(){
+        	$("#load").html("Loading Data...");
+        	$("#load").show();
+            var dataUrl="/data";
+            $.ajax({
+               type: 'GET',
+               url: dataUrl,
+               data: {
+            	   'wallets': prepareWallets()
+               },
+               dataType: 'json',
+               success: function(data){
+            	   $("#load").hide();
+                    globalData = data;                        
+                    displayData();
+               },
+               error: function(e) {
+            	   $("#load").html("Error...");
+                    console.log(e);
+               }
+            });
+        }
         function displayData(){
             var dvTable = $("#dvTable");
             dvTable.empty();
@@ -127,29 +163,44 @@
             $.each(globalData, function(i, v) {
                 headers.push(v.name);
             });
-            var c = parseInt($("#btnCount").val());
+            var c = parseInt($("#dataCount").val());
             for(var i=0; i < c; i++){
                 createData(globalData, headers, i);
             }
         }
-
         function createData(data, headers, i){
             var main = $("<div class='main' />");
-            var header = $("<div />");
-            header.append(createHeader(headers, i));
-            main.append(header);
+            
+            main.append(createHeader(headers, i));
 
-            var body = $("<div class='bodydata' />");
-            var obj=data[indexes[i]];
-            var gains=obj.gains;
-            $.each(gains, function(gi, g){
-                main.append(createCell(obj, g));
-                main.append($("<br/>"));
-            });            
-            main.append(body);
+            main.append(createRank(headers, i));
+             
+            main.append(createBody(data, i));
 
             var dvTable = $("#dvTable");
             dvTable.append(main);
+        }
+        function createRank(headers, i) {
+        	var body = $("<div class='rankBody' />");
+        	var obj=ranks[headers[indexes[i]]];
+        	if(obj){
+	        	$.each(obj, function(ind, d){
+	        		body.append(d.code +": "+d.gain+'%</br>');
+	        	});
+        	}
+        	return body;
+        }
+        function createBody(data, i){
+        	 var body = $("<div class='bodydata' />");
+             var obj=data[indexes[i]];
+             if(obj){
+	             var gains=obj.gains;
+	             $.each(gains, function(gi, g){
+	            	 body.append(createCell(obj, g));
+	            	 body.append($("<br/>"));
+	             });
+             }
+             return body;
         }
         function createCell(obj, gain){
             var cellW = $("<div class='cellwrap'  />");
@@ -178,6 +229,7 @@
                  ;
         }
         function createHeader(headers, i){
+        	var header = $("<div />");
             var sel = $("<select class='currencyheader'>").appendTo('body');
             sel.change(i, function(e){
                 indexes[e.data]=parseInt(e.target.value);
@@ -186,7 +238,8 @@
             $(headers).each(function(ind, hea) {
                 sel.append($("<option>").attr('selected', ind == indexes[i]).attr('value', ind).text(hea));
             });
-            return sel;
+            header.append(sel);
+            return header;
         }
     </script>
 </body>

@@ -3,7 +3,6 @@ package com.crypto.exchange.core;
 import java.util.function.Supplier;
 
 public class Wallet {
-
 	private String name;
 	private double factor;
 	public Supplier<Double> converterProvider;
@@ -30,6 +29,6 @@ public class Wallet {
 	}
 
 	public double to(double price) {
-		return factor * price;
+		return (int) (factor * price * 1000000) / 1000000.0;
 	}
 }

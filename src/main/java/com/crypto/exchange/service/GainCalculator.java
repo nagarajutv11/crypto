@@ -86,6 +86,10 @@ public class GainCalculator {
 		return INSTANC;
 	}
 
+	public String[] getWalletNames() {
+		return wallets.keySet().toArray(new String[0]);
+	}
+
 	/**
 	 * Wallets: 22 Bitfinex/UST->11 Bitfinex/XLM->1 Bitfinex/ETH->108
 	 * Koinex/TUSD->12 Bitfinex/f->25 Bitfinex/BTC->96 Binance/BTC->149
@@ -99,7 +103,7 @@ public class GainCalculator {
 	 */
 	public synchronized List<PathData> calculateGains(String... walletNames) {
 		if (walletNames == null || walletNames.length == 0) {
-			walletNames = wallets.keySet().toArray(new String[0]);
+			walletNames = getWalletNames();
 		}
 		List<Currency> all = getAllCurrencies();
 		this.collect = all.stream().collect(Collectors.groupingBy(c -> c.getWallet()));
